@@ -10,15 +10,15 @@ module principal (
   logic [31:0] led_number = 0;
   logic        led_write = 0;
 
-  typedef enum {
-    S_WAIT1,
-    S_WHITE,
-    S_WAIT2,
-    S_RED
-  } state_t;
+  logic [24:0] counter = 0;
+  logic [23:0] position_led = 1;
 
-  state_t        state = S_WAIT1;
-  logic   [24:0] counter = 0;
+  typedef enum {
+    S_WAIT,
+    S_LED1,
+    S_LED2
+  } state_t;
+  state_t state = S_WAIT;
 
   ws2812b #(
       .NB_LEDS(15)
@@ -33,43 +33,36 @@ module principal (
 
   always_ff @(posedge clk) begin
     if (rst) begin
-      led_write <= 0;
-      led_color <= 0;
-      led_number <= 0;
+      position_led <= 1;
       counter <= 0;
-      state <= S_WAIT1;
+      state <= S_WAIT;
     end else begin
       unique case (state)
-        S_WAIT1: begin
+        S_WAIT: begin
+          led_write <= 0;
           if (counter == 24'hFF0000) begin
             counter <= 0;
-            led_write <= 0;
-            state <= S_RED;
+            state   <= S_LED1;
           end else begin
             counter <= counter + 1;
           end
         end
-        S_RED: begin
+
+        S_LED1: begin
+          led_number <= position_led;
           led_color <= 24'h00FF00;
-          led_number <= 2;
           led_write <= 1;
-          state <= S_WAIT2;
+          position_led <= (position_led == 13) ? 1 : position_led + 1;
+          state <= S_LED2;
         end
-        S_WAIT2: begin
-          if (counter == 24'hFF0000) begin
-            counter <= 0;
-            led_write <= 0;
-            state <= S_WHITE;
-          end else begin
-            counter <= counter + 1;
-          end
-        end
-        S_WHITE: begin
+
+        S_LED2: begin
+          led_number <= position_led;
           led_color <= 24'hFFFFFF;
-          led_number <= 2;
           led_write <= 1;
-          state <= S_WAIT1;
+          state <= S_WAIT;
         end
+
       endcase
     end
   end
