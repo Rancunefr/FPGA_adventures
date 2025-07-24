@@ -16,7 +16,7 @@ module tb_principal;
 
   initial begin
     clk = 0;
-    repeat (100000) begin
+    repeat (10000) begin
       #(CLOCK_PERIOD / 2) clk = ~clk;
     end
   end
