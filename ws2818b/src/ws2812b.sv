@@ -1,33 +1,35 @@
 `timescale 1ns / 1ps
 
 module ws2812b (
-    input logic clk,
-    input logic rst,
-    input logic [23:0] color,
-    input logic [31:0] nb_led,
-    input logic write,
-    output logic data = 0
+    input  logic        clk,
+    input  logic        rst,
+    input  logic [23:0] color,    // Réglage de la couleur
+    input  logic [31:0] nb_led,   // Numéro de la led régler
+    input  logic        write,    // Doit être mis à 1 lorsque color et nb_led sont fixés
+    output logic        data = 0
 );
 
   parameter logic [31:0] FCLK = 100;  // MHz
-  parameter logic [31:0] NB_LEDS = 5;  // Total number of leds
-  parameter logic [31:0] T0H = 400;  // nanoseconds
-  parameter logic [31:0] T1H = 850;  // nanoseconds
-  parameter logic [31:0] T0L = 850;  // nanoseconds
-  parameter logic [31:0] T1L = 400;  // nanoseconds
-  parameter logic [31:0] TRST = 100000;  // nanoseconds
+  parameter logic [31:0] NB_LEDS = 5;  // Nombre total de leds
+  parameter logic [23:0] START_COLOR = 24'h555555;  // Couleur par défaut (GGRRBB)
 
-  localparam logic [31:0] TCLK = 1000 / (FCLK);  // nanoseconds
-  localparam logic [31:0] C0H = T0H / TCLK;  // clock periods
-  localparam logic [31:0] C1H = T1H / TCLK;  // clock periods
-  localparam logic [31:0] C0L = T0L / TCLK;  // clock periods
-  localparam logic [31:0] C1L = T1L / TCLK;  // clock periods
-  localparam logic [31:0] CRST = TRST / TCLK;  // clock periods
+  parameter logic [31:0] T0H = 400;  // ns
+  parameter logic [31:0] T1H = 850;  // ns
+  parameter logic [31:0] T0L = 850;  // ns
+  parameter logic [31:0] T1L = 400;  // ns
+  parameter logic [31:0] TRST = 100000;  // ns
+
+  localparam logic [31:0] TCLK = 1000 / (FCLK);  // ns
+  localparam logic [31:0] C0H = T0H / TCLK;  // cycles
+  localparam logic [31:0] C1H = T1H / TCLK;  // cycles
+  localparam logic [31:0] C0L = T0L / TCLK;  // cycles
+  localparam logic [31:0] C1L = T1L / TCLK;  // cycles
+  localparam logic [31:0] CRST = TRST / TCLK;  // cycles
 
   logic [23:0] RGB_color[NB_LEDS] = '{
       0: 24'hFF0000,
       NB_LEDS - 1: 24'hFF0000,
-      default: 24'h00FF00
+      default: START_COLOR
   };
 
   logic [31:0] current_led;
@@ -43,12 +45,12 @@ module ws2812b (
   state_t state;
 
   initial begin
-    $display("Clock frequency: %d MHz", FCLK);
-    $display("T0H  %d nanoseconds", T0H);
-    $display("T0L  %d nanoseconds", T0L);
-    $display("T1H  %d nanoseconds", T1H);
-    $display("T1L  %d nanoseconds", T1L);
-    $display("TRST %d nanoseconds", TRST);
+    $display("Fréquence horloge : %d MHz", FCLK);
+    $display("T0H  %d ns", T0H);
+    $display("T0L  %d ns", T0L);
+    $display("T1H  %d ns", T1H);
+    $display("T1L  %d ns", T1L);
+    $display("TRST %d ns", TRST);
   end
 
   always_ff @(posedge clk) begin
@@ -63,7 +65,7 @@ module ws2812b (
     end else begin
       unique case (state)
 
-        IDLE: begin  // FIXME Necessaire ?
+        IDLE: begin
           data <= 0;
           current_led <= 0;
           current_bit <= 23;
