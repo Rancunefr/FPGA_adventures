@@ -13,7 +13,10 @@ module tb_pwm;
   parameter int CLOCK_PERIOD = 10;
 
   pwm #(
-      .CLK_SCALER(1)
+      .CLK_SCALER(100),
+      .RESET_DUTY_CYCLE(20),
+      .MIN_DUTY(20),
+      .MAX_DUTY(80)
   ) DUT (
       .clk(clk),
       .rst(rst),
@@ -33,20 +36,20 @@ module tb_pwm;
 
   initial begin
     rst = 0;
-    #12;
+    oe = 1;
+    run = 1;
+    duty_cycle = 0;
+    duty_valid = 0;
+    #10;
     rst = 1;
     #30;
     rst = 0;
-    #50;
-    rst = 0;
-    run = 0;
-    duty_cycle = 42;
-    duty_valid = 1;
-    oe = 1;
-    #20;
-    duty_valid = 0;
     #100;
-    run = 1;
+    duty_cycle = 99;
+    duty_valid = 1;
+    #10;
+
+
   end
 
 endmodule
