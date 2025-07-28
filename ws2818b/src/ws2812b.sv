@@ -1,23 +1,22 @@
 `timescale 1ns / 1ps
 
-module ws2812b (
-    input  logic        clk,
-    input  logic        rst,
-    input  logic [23:0] color,    // Réglage de la couleur
-    input  logic [31:0] nb_led,   // Numéro de la led régler
-    input  logic        write,    // Doit être mis à 1 lorsque color et nb_led sont fixés
-    output logic        data = 0
+module ws2812b #(
+    parameter logic [31:0] FCLK = 100,  // MHz
+    parameter logic [31:0] NB_LEDS = 5,  // Nombre total de leds
+    parameter logic [23:0] START_COLOR = 24'h555555,  // Couleur par défaut (GGRRBB)
+    parameter logic [31:0] T0H = 400,  // ns
+    parameter logic [31:0] T1H = 850,  // ns
+    parameter logic [31:0] T0L = 850,  // ns
+    parameter logic [31:0] T1L = 400,  // ns
+    parameter logic [31:0] TRST = 100000  // ns
+) (
+    input logic clk,
+    input logic rst,
+    input logic [23:0] color,  // Réglage de la couleur
+    input logic [$clog2(NB_LEDS)-1:0] nb_led,  // Numéro de la led régler
+    input logic write,  // Doit être mis à 1 lorsque color et nb_led sont fixés
+    output logic data = 0
 );
-
-  parameter logic [31:0] FCLK = 100;  // MHz
-  parameter logic [31:0] NB_LEDS = 5;  // Nombre total de leds
-  parameter logic [23:0] START_COLOR = 24'h555555;  // Couleur par défaut (GGRRBB)
-
-  parameter logic [31:0] T0H = 400;  // ns
-  parameter logic [31:0] T1H = 850;  // ns
-  parameter logic [31:0] T0L = 850;  // ns
-  parameter logic [31:0] T1L = 400;  // ns
-  parameter logic [31:0] TRST = 100000;  // ns
 
   localparam logic [31:0] TCLK = 1000 / (FCLK);  // ns
   localparam logic [31:0] C0H = T0H / TCLK;  // cycles

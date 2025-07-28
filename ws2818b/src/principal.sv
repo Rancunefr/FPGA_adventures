@@ -11,7 +11,7 @@ module principal (
   logic        led_write = 0;
 
   logic [24:0] counter = 0;
-  logic [23:0] position_led = 1;
+  logic [$clog2(15):0] position_led = 1;
 
   typedef enum {
     S_WAIT,
