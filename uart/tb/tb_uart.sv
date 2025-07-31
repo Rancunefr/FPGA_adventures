@@ -7,13 +7,17 @@ module tb_uart;
   logic clk;
   logic rst;
   logic tx;
-  logic data_send;
+  logic [7:0] tx_data;
+  logic tx_en;
+  logic tx_ready;
 
   uart DUT (
       .clk(clk),
       .rst(rst),
       .tx(tx),
-      .data_out_ready(data_send)
+      .tx_data(tx_data),
+      .tx_en(tx_en),
+      .tx_ready(tx_ready)
   );
 
   initial begin
@@ -25,12 +29,17 @@ module tb_uart;
 
   initial begin
     rst = 0;
+    tx_data = "H";
+    tx_en = 0;
     #20;
     rst = 1;
     #20;
     rst = 0;
-    #50 data_send = 1;
-    #200000 data_send = 0;
+    #500000;
+    tx_data = "R";
+    tx_en   = 1;
+    #10;
+    tx_en = 0;
   end
 
 endmodule
